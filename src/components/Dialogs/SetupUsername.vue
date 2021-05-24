@@ -1,6 +1,6 @@
 <template>
   <q-card class="text-center q-pl-lg q-pr-lg" style="min-width:450px;">
-    <small>Setup Username</small>
+    <small>Setup</small>
     <q-form
       @submit="onSubmit"
       @reset="onReset"
@@ -76,17 +76,37 @@
   //TODO offer pre-generated name
   // import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 
+  //default servers
+  //TODO download live servers from network
+  let defaultServers = [
+    {
+      spec:"https://pioneers.dev/spec/swagger.json",
+      wss:"wss://pioneers.dev"
+    },
+    {
+      spec:"http://127.0.0.1:9001/spec/swagger.json",
+      wss:"ws://127.0.0.1:9001"
+    },
+    //soon (tm)
+    // {
+    //   spec:"https://beta.pioneers.dev/spec/swagger.json",
+    //   wss:"wss://beta.pioneers.dev"
+    // },
+  ]
+
   import {mapGetters, mapMutations} from 'vuex'
   export default {
     data () {
       return {
         featureSelfHost,
+        availableServers:defaultServers,
+        serverSelected:defaultServers[0],
         error:false,
         pioneerLive:false,
         usersOnline:[],
         usersOnlineCount:0,
         username: "",
-        pioneerUrl:"",
+        pioneerUrl:defaultServers[0].spec,
         password:""
       }
     },

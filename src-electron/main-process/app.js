@@ -47,9 +47,25 @@ let featureKeepkey = process.env['KEEPKEY_FEATURE']
 let featureSoftwareCreate = process.env['CREATE_SOFTWARE_FEATURE']
 let featurePasswordless = process.env['PASSWORDLESS_FEATURE']
 let featureInsecurePassword = process.env['INSECURE_PASSWORD']
-
+let spec = process.env['URL_PIONEER_SPEC']
+let wss = process.env['URL_PIONEER_WS']
 //
 let blockchains = ['bitcoin','ethereum','thorchain','bitcoincash','litecoin','binance']
+
+export async function updateServerSelection(event, data) {
+  let tag = TAG + " | updateServerSelection | ";
+  try {
+    log.info(tag,"spec: ",spec)
+    log.info(tag,"wss: ",wss)
+    if(data.spec) spec = data.spec
+    if(data.wss) spec = data.wss
+
+  } catch (e) {
+    console.error(tag, "e: ", e);
+    return {error:e};
+  }
+}
+
 
 export async function attemptPair(event, data) {
   let tag = TAG + " | attemptPair | ";
@@ -89,16 +105,14 @@ export async function onPairKeepKey(event, data) {
   }
 }
 
-
 export async function initConfig() {
   let tag = TAG + " | initConfig | ";
   try {
     let config = await App.getConfig()
+    log.info(tag,"config: ",config)
     if(config){
-      //
+      log.info(tag,"config found!: Verify")
       if(!config.pioneerUrl){
-        // let pioneerUrl = "http://127.0.0.1:9001/spec/swagger.json"
-        let pioneerUrl = "https://pioneers.dev/spec/swagger.json"
         App.updateConfig({pioneerUrl});
       }
       if(!config.queryKey){
@@ -110,15 +124,17 @@ export async function initConfig() {
       }
       return true
     } else {
+      log.info(tag,"config empty!: init")
+      log.info(tag,"current env!: env:",process.env)
+      log.info(tag,"current env!: env:",process.env['URL_PIONEER_SPEC'])
+      log.info(tag,"current env!: env:",process.env['URL_PIONEER_WS'])
       //create key/save to config
       await App.initConfig("english");
       let queryKey = uuidv4()
       App.updateConfig({queryKey});
-      //pioneer server
-      //TODO get from ENV? always remote?
-      let pioneerUrl = "https://pioneers.dev/spec/swagger.json"
       App.updateConfig({pioneerUrl});
-      App.updateConfig({spec:pioneerUrl});
+      App.updateConfig({spec});
+      App.updateConfig({wss});
       App.updateConfig({blockchains});
       return true
     }
@@ -199,18 +215,19 @@ export async function continueSetup(event, data) {
             queryKey:config.queryKey
           })
           NETWORK = await NETWORK.init()
+
+          event.sender.send('navigation',{ dialog: 'SetupUsername', action: 'open'})
           return {
             setup:false,
             success:false,
             result:"setup required! network not found!"
           }
         } else {
-          log.info(tag,"Checkpoint3b invalid config :( trying again")
-          await initConfig()
+          log.error(tag,"Checkpoint3b invalid config :( trying again")
           return {
             setup:false,
             success:false,
-            result:"setup required! missing config params"
+            result:"setup required! invalid config :("
           }
         }
       }
@@ -653,14 +670,14 @@ export async function refreshPioneer(event, data) {
         }
 
         //wallets
-        let wallets = await App.getWallets()
-        if(wallets){
-          WALLETS_LOADED = wallets
-          log.info(tag,"registering wallets: ",wallets)
-          event.sender.send('updateWallets',wallets)
-        } else {
-          log.info(tag,"No wallets loaded!")
-        }
+        // let wallets = await App.getWallets()
+        // if(wallets){
+        //   WALLETS_LOADED = wallets
+        //   log.info(tag,"registering wallets: ",wallets)
+        //   event.sender.send('updateWallets',wallets)
+        // } else {
+        //   log.info(tag,"No wallets loaded!")
+        // }
 
       } else {
         log.info(tag,"Wallet not started yet! ")
@@ -892,6 +909,22 @@ export async function broadcastTransaction(event, data) {
       broadcastResult,
       resultUpdate
     })
+
+  } catch (e) {
+    console.error(tag, "e: ", e);
+    return {error:e};
+  }
+}
+
+export async function cancelTransaction(event, data) {
+  let tag = TAG + " | cancelTransaction | ";
+  try {
+    //cancelTransaction
+    let removeInvocation = await App.deleteInvocation(data.invocationId)
+    log.info(tag,"removeInvocation: ",removeInvocation)
+
+    //TODO update local db?
+
 
   } catch (e) {
     console.error(tag, "e: ", e);

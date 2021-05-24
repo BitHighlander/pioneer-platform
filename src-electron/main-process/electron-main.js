@@ -40,7 +40,8 @@ import {
   getUsbDevices,
   onPairKeepKey,
   buildTransaction,
-  broadcastTransaction
+  broadcastTransaction,
+  cancelTransaction
 } from './app'
 
 
@@ -234,7 +235,19 @@ app.on('activate', () => {
     createWindow()
   }
 })
-//
+//cancelTransaction
+ipcMain.on('cancelTransaction', async (event, data) => {
+  const tag = TAG + ' | cancelTransaction | '
+  try {
+    log.info(tag,"checkpoint0")
+    let resultCancel = await cancelTransaction(event, data)
+    log.info(tag,"resultCancel: ",resultCancel)
+
+  } catch (e) {
+    console.error(tag, e)
+  }
+})
+
 //setContext
 ipcMain.on('setContext', async (event, data) => {
   const tag = TAG + ' | setContext | '
@@ -279,10 +292,6 @@ ipcMain.on('onAttemptCreateUsername', async (event, data) => {
 ipcMain.on('continueSetup', async (event, data) => {
   const tag = TAG + ' | continueSetup | '
   try {
-    //TODO how can this return null sometimes??? without error?
-    let setupResult = await continueSetup(event, data)
-    log.info(tag,"setupResult: ",setupResult)
-
 
     let resultSetup = await continueSetup(event, data)
     log.info(tag,"resultSetup: ",resultSetup)
@@ -292,8 +301,13 @@ ipcMain.on('continueSetup', async (event, data) => {
       //if app !started
       if(!IS_APP_STARTED){
         IS_APP_STARTED = true
-        onStartMain(event, data)
+        let startResult = await onStartMain(event, data)
+        log.info(tag,"startResult: ",startResult)
+      } else {
+        log.error(tag,"Attempting to start app after already started")
       }
+    } else {
+      log.error("Failed to continue setup!")
     }
 
 
@@ -399,6 +413,8 @@ let onStartMain = async function(event, data){
           log.error("Unknown event: "+request.type)
       }
     })
+    event.sender.send('setContext',{context:onStartResult.context})
+    return onStartResult
   }catch(e){
     throw Error("Failed to start!")
   }

@@ -171,7 +171,7 @@ export default {
   computed: {
     ...mapGetters([
       'getUsername',
-      'isTestnet',
+      // 'isTestnet',
       'getTotal',
       'wallets',
       'devices',
@@ -214,7 +214,7 @@ export default {
       this.$q.electron.ipcRenderer.send('refreshPioneer', {});
 
       //get all the things
-      let testnet = await this.$store.getters['isTestnet']
+      // let testnet = await this.$store.getters['isTestnet']
       let context = await this.$store.getters['getContext']
       let username = await this.$store.getters['getUsername']
       let total = await this.$store.getters['getTotal']

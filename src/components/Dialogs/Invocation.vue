@@ -130,7 +130,7 @@
         <div v-if="!isBroadcasting">
           <q-btn
             color="red"
-            @click="cancel()"
+            @click="cancel(invocationContext)"
             label="Reject"
             size="lg"
             class="font-weight-medium q-pl-md q-pr-md"
@@ -332,8 +332,9 @@
         this.isBroadcasting = true
         this.$q.electron.ipcRenderer.send('broadcastTransaction', {invocationId});
       },
-      cancel() {
+      cancel(invocationId) {
         //mark invocation context rejected
+        this.$q.electron.ipcRenderer.send('cancelTransaction', {invocationId});
         this.close()
 
       },

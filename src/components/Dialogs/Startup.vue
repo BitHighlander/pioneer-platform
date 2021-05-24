@@ -133,7 +133,7 @@
     },
     mounted() {
       try{
-
+        //
       }catch(e){
         console.error(e)
       }
@@ -207,6 +207,7 @@
         //refresh
         this.$q.electron.ipcRenderer.send('refreshPioneer', {});
 
+        //TODO why is this bs needed!!??
         //get all the things
         this.context = await this.$store.getters['getContext']
         this.username = await this.$store.getters['getUsername']

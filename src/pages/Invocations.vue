@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>Transactions</h3>
+    <h3>Invocations</h3>
     <div class="q-pa-md scroll" style="height: 300px">
       <q-pull-to-refresh
         @refresh="refresh"
