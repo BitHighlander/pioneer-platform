@@ -182,7 +182,6 @@
 
           if(this.isAccepted && data.online){
             console.log("Continue")
-            this.openSetup()
           }
 
         })

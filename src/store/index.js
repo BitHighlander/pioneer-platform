@@ -6,7 +6,6 @@ import global from './modules/global'
 import wallet from './modules/platform'
 import auth from './modules/auth'
 
-
 import ipc from './plugins/ipc'
 
 // import app from './App'

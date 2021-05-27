@@ -54,6 +54,7 @@ spec = spec.replace(/"/g, '')
 let wss = process.env['URL_PIONEER_WS']
 wss = wss.replace(/"/g, '')
 let queryKey
+let username
 //blockchains
 let blockchains = ['bitcoin','ethereum','thorchain','bitcoincash','litecoin','binance']
 
@@ -133,8 +134,19 @@ export async function startNetwork(event, data) {
     global = global.data
     log.info(tag,"global: ",global)
 
-    //
-    event.sender.send('pushPioneerStatus',{ online:true, spec, global})
+    if(global.online){
+      event.sender.send('pushPioneerStatus',{ online:true, spec, global})
+      if(username){
+        //open startup
+        event.sender.send('navigation',{ dialog: 'Startup', action: 'open'})
+      } else {
+        //open username
+        event.sender.send('navigation',{ dialog: 'SetupUsername', action: 'open'})
+      }
+    }
+
+
+
 
   } catch (e) {
     console.error(tag, "e: ", e);
@@ -266,6 +278,7 @@ export async function continueSetup(event, data) {
         if(config.username){
           log.info(tag,"username: ",config.username)
           log.info(tag,"Checkpoint4a Username found! SuccessFully Setup Wallet!")
+          username = config.username
           //start wallet?
           if(!WALLET_INIT){
             log.info(tag,"Checkpoint5a Started Wallet!")
@@ -623,17 +636,17 @@ export async function onStart(event,data) {
           break
         case 'transfer':
           console.log(" **** PROCESS EVENT ****  request: ",request)
-          // event.sender.send('navigation',{ dialog: 'Invocation', action: 'open'})
-          // event.sender.send('setContextInvoke',{ context: request.context })
+          event.sender.send('navigation',{ dialog: 'Invocation', action: 'open'})
+          event.sender.send('setContextInvoke',{ context: request.context })
           break
-        // case 'swap':
-        //   console.log(" **** PROCESS EVENT ****  request: ",request)
-        //   event.sender.send('setContext',{ context: request.context })
-        //   break
-        // case 'approve':
-        //   console.log(" **** PROCESS EVENT ****  request: ",request)
-        //   event.sender.send('setContext',{ context: request.context })
-        //   break
+        case 'swap':
+          console.log(" **** PROCESS EVENT ****  request: ",request)
+          event.sender.send('setContext',{ context: request.context })
+          break
+        case 'approve':
+          console.log(" **** PROCESS EVENT ****  request: ",request)
+          event.sender.send('setContext',{ context: request.context })
+          break
         default:
           console.log("Unhandled type: ",request.type)
       }

@@ -72,7 +72,7 @@
                     <div>
                       ({{coin.symbol}}) {{walletContext.balances[coin.symbol]}}
                     </div>
-                    <animated-number :value="walletContext.valueUsds[coin.symbol]" :formatValue="formatToPriceUSD" :duration="duration"/>
+<!--                    <animated-number :value="walletContext.valueUsds[coin.symbol]" :formatValue="formatToPriceUSD" :duration="duration"/>-->
                   </q-item-section>
                 </template>
 
@@ -115,7 +115,7 @@
   export default {
     name: 'Pioneer',
     components: {
-      AnimatedNumber
+      // AnimatedNumber
     },
     data () {
       return {
