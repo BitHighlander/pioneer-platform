@@ -115,7 +115,6 @@
         devices:[],
         context:"",
         isReady:false,
-        context:"",
         masterAddressBtc:"",
         masterAddressEth:"",
         totalValueUsd:0,
