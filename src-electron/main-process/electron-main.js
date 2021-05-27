@@ -12,7 +12,7 @@
 
 const TAG = ' | ELECTRON-MAIN | '
 const log = require('electron-log');
-import { app, Menu, Tray, BrowserWindow, nativeTheme, ipcMain, Notification } from 'electron'
+import { app, Menu, Tray, BrowserWindow, nativeTheme, ipcMain, Notification, shell } from 'electron'
 //import {checkConfigs, getConfig, innitConfig, updateConfig} from "@pioneer-platform/pioneer-config";
 const { menubar } = require('menubar');
 const CryptoJS = require("crypto-js")
@@ -28,8 +28,10 @@ let sleep = wait.sleep;
 import {
   onStart,
   onLogin,
+  startNetwork,
   attemptPair,
-  checkPioneerUrl,
+  checkPioneerUrls,
+  updateServerSelection,
   createWallet,
   onAttemptCreateUsername,
   approveTransaction,
@@ -89,7 +91,6 @@ if (process.env.PROD) {
 }
 
 let mainWindow
-let previewWindow
 // let approveWindow
 
 //TODO :pray: someday menubar again?
@@ -109,40 +110,6 @@ let previewWindow
 //     }
 //   })
 //   return previewWindow
-// }
-
-//create pop-up approve
-// function createApproveWindow (invocationId) {
-//   log.info("LAUNCH APPROVE WINDOW")
-//   /**
-//    * pop-up approve
-//    *
-//    * more options: https://www.electronjs.org/docs/api/browser-window
-//    */
-//   approveWindow = new BrowserWindow({
-//     width: 600,
-//     height: 600,
-//     x:0, //Top of window
-//     useContentSize: true,
-//     //TODO make toggle
-//     //remember last setting?
-//     alwaysOnTop: true,
-//     webPreferences: {
-//       // Change from /quasar.conf.js > electron > nodeIntegration;
-//       // More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration
-//       nodeIntegration: process.env.QUASAR_NODE_INTEGRATION,
-//       nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION,
-//
-//       // More info: /quasar-cli/developing-electron-apps/electron-preload-script
-//       // preload: path.resolve(__dirname, 'electron-preload.js')
-//     }
-//   })
-//
-//   approveWindow.loadURL(process.env.APP_URL+"/#invocations")
-//
-//   approveWindow.on('closed', () => {
-//     approveWindow = null
-//   })
 // }
 
 function bringWindowToFront(){
@@ -201,7 +168,7 @@ function createWindow () {
     useContentSize: true,
     //TODO make toggle
     //remember last setting?
-    // alwaysOnTop: true,
+    //alwaysOnTop: true,
     webPreferences: {
       // Change from /quasar.conf.js > electron > nodeIntegration;
       // More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration
@@ -235,6 +202,23 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+//openLink
+ipcMain.on('openLink', async (event, data) => {
+  const tag = TAG + ' | cancelTransaction | '
+  try {
+    log.info(tag,"data: ",data)
+
+    if(data.url){
+      shell.openExternal(data.url)
+    }
+
+
+  } catch (e) {
+    console.error(tag, e)
+  }
+})
+
 //cancelTransaction
 ipcMain.on('cancelTransaction', async (event, data) => {
   const tag = TAG + ' | cancelTransaction | '
@@ -309,23 +293,6 @@ ipcMain.on('continueSetup', async (event, data) => {
     } else {
       log.error("Failed to continue setup!")
     }
-
-
-    // let isSetup = false
-    // while(!isSetup){
-    //   let resultSetup = await continueSetup(event, data)
-    //   log.info(tag,"resultSetup: ",resultSetup)
-    //   if(resultSetup.setup) {
-    //     event.sender.send('navigation',{ dialog: 'Startup', action: 'open'})
-    //     isSetup = true
-    //   }
-    //   //if app !started
-    //   if(!IS_APP_STARTED){
-    //     IS_APP_STARTED = true
-    //     onStart(event, data)
-    //   }
-    //   await sleep(10000)
-    // }
 
   } catch (e) {
     console.error(tag, e)
@@ -435,7 +402,7 @@ ipcMain.on('updateContext', async (event, data) => {
   const tag = TAG + ' | updateContext | '
   try {
 
-    updateContext(event, data)
+    //setContext(event, data)
 
   } catch (e) {
     console.error(tag, e)
@@ -456,12 +423,40 @@ ipcMain.on('onTryPin', async (event, data) => {
   }
 })
 
-ipcMain.on('checkPioneerUrl', async (event, data) => {
-  const tag = TAG + ' | checkPioneerUrl | '
+//updateServerSelection
+ipcMain.on('updateServerSelection', async (event, data) => {
+  const tag = TAG + ' | updateServerSelection | '
   try {
-    log.info(tag,"checkPioneerUrl",data)
+    //log.info(tag,"updateServerSelection",data)
     //
-    checkPioneerUrl(event, data)
+    let result = await updateServerSelection(event, data)
+    log.info(tag,"result",result)
+
+  } catch (e) {
+    console.error(tag, e)
+  }
+})
+
+ipcMain.on('checkPioneerUrls', async (event, data) => {
+  const tag = TAG + ' | checkPioneerUrls | '
+  try {
+    //log.info(tag,"checkPioneerUrls",data)
+    //
+    let result = checkPioneerUrls(event, data)
+    log.info(tag,"result",result)
+  } catch (e) {
+    console.error(tag, e)
+  }
+})
+
+ipcMain.on('startNetwork', async (event, data) => {
+  const tag = TAG + ' | startNetwork | '
+  try {
+    log.info(tag,"startNetwork",data)
+
+    //result
+    let result = startNetwork(event, data)
+    log.info(tag,"result",result)
 
   } catch (e) {
     console.error(tag, e)

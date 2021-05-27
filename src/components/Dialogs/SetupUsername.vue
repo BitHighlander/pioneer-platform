@@ -1,42 +1,15 @@
 <template>
   <q-card class="text-center q-pl-lg q-pr-lg" style="min-width:450px;">
-    <small>Setup</small>
+    <small>Setup Username</small>
     <q-form
       @submit="onSubmit"
       @reset="onReset"
     >
     <q-card-section>
-      <div v-if="pioneerLive">
-        <p>Please create a user</p>
-      </div>
-      <div v-if="!pioneerLive">
-        live: {{pioneerLive}}
-        <br/>
 
-        <div v-if="featureSelfHost">
-          <q-input
-            filled
-            v-model="pioneerUrl"
-            label="Pioneer URL"
-            hint=""
-            lazy-rules
-            :rules="[ val => val && val.length > 0 || 'Please type something']"
-          />
-        </div>
-        <div v-if="!featureSelfHost">
-          PioneerUrl: {{pioneerUrl}}
-        </div>
-        <small>Attempting to connect...</small>
-        <q-spinner
-          color="primary"
-          size="5rem"
-          v-if="true"
-          key="spinner"
-        />
-      </div>
+        <p>Please create a user</p>
     </q-card-section>
     <q-card-section>
-      <div v-if="pioneerLive">
         <q-input
           filled
           v-model="username"
@@ -45,18 +18,11 @@
           lazy-rules
           :rules="[ val => val && val.length > 3 || error]"
         />
-      </div>
     </q-card-section>
       <q-card-actions align="center" class="q-pb-lg q-pl-md q-pr-md">
-        <div v-if="pioneerLive">
-          <small>online: {{usersOnlineCount}}</small>
-          <small>users: {{usersOnline}}</small>
-          <q-btn label="Continue" type="submit" color="primary" />
-        </div>
-        <div v-if="!pioneerLive">
-          <q-btn label="Test" @click="onTest" color="primary" />
-          <q-btn label="Reset" type="reset" flat />
-        </div>
+        <small>online: {{usersOnlineCount}}</small>
+        <small>users: {{usersOnline}}</small>
+        <q-btn label="Continue" type="submit" color="primary" />
       </q-card-actions>
     </q-form>
   </q-card>
@@ -78,40 +44,22 @@
 
   //default servers
   //TODO download live servers from network
-  let defaultServers = [
-    {
-      spec:"https://pioneers.dev/spec/swagger.json",
-      wss:"wss://pioneers.dev"
-    },
-    {
-      spec:"http://127.0.0.1:9001/spec/swagger.json",
-      wss:"ws://127.0.0.1:9001"
-    },
-    //soon (tm)
-    // {
-    //   spec:"https://beta.pioneers.dev/spec/swagger.json",
-    //   wss:"wss://beta.pioneers.dev"
-    // },
-  ]
+
 
   import {mapGetters, mapMutations} from 'vuex'
   export default {
     data () {
       return {
-        featureSelfHost,
-        availableServers:defaultServers,
-        serverSelected:defaultServers[0],
         error:false,
         pioneerLive:false,
         usersOnline:[],
         usersOnlineCount:0,
         username: "",
-        pioneerUrl:defaultServers[0].spec,
         password:""
       }
     },
     computed: {
-      ...mapGetters(['getPioneerUrl','getPioneerStatus','getUsersOnline']),
+      ...mapGetters([]),
     },
     async mounted() {
       try{
@@ -122,31 +70,6 @@
       }
     },
     watch: {
-      "$store.state.usersOnline": {
-        handler: function() {
-          const usersOnline = this.$store.getters['getUsersOnline'];
-          console.log("usersOnline: ",usersOnline)
-          this.usersOnline = usersOnline
-          this.usersOnlineCount = usersOnline.length
-        },
-        immediate: true
-      },
-      "$store.state.pioneerUrl": {
-        handler: function() {
-          const pioneerUrl = this.$store.getters['getPioneerUrl'];
-          console.log("pioneerUrl: ",pioneerUrl)
-          this.pioneerUrl = pioneerUrl
-        },
-        immediate: true
-      },
-      "$store.state.pioneerLive": {
-        handler: function() {
-          const pioneerLive = this.$store.getters['getPioneerLive'];
-          console.log("pioneerLive: ",pioneerLive)
-          this.pioneerLive = pioneerLive
-        },
-        immediate: true
-      }
     },
     methods: {
       ...mapMutations(['showModal','hideModal']),

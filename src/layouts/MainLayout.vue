@@ -226,7 +226,7 @@ export default {
       let balances = await this.$store.getters['getBalances']
 
       this.totalValueUsd = total
-      console.log("STATE: ",{context, testnet,username,total,walletsLoaded,devicesLoaded,isPioneerLive,pioneerUrl,seed,balances})
+      console.log("STATE: ",{context,username,total,walletsLoaded,devicesLoaded,isPioneerLive,pioneerUrl,seed,balances})
 
     },
     openSettings() {

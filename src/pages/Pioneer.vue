@@ -34,12 +34,12 @@
             >
               <q-list>
                 <div v-for="(wallet, index) in wallets" :key="index" class="q-mb-sm">
-                  <q-item clickable v-close-popup @click="onItemClick(wallet.walletId)">
+                  <q-item clickable v-close-popup @click="onItemClick(wallet.context)">
                     <q-item-section avatar>
                       <q-avatar icon="account_balance_wallet" color="primary" text-color="white" />
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label>{{wallet.walletId.slice(0, 10)}}</q-item-label>
+                      <q-item-label>{{wallet.context.slice(0, 10)}}</q-item-label>
                       <q-item-label caption></q-item-label>
                     </q-item-section>
                     <q-item-section side>
@@ -56,7 +56,7 @@
             <div v-for="coin in coins" :key="coin.symbol">
 <!--                          {{coin}}-->
 <!--                          {{coin.symbol}}-->
-<!--                              {{coin.icon}}-->
+<!--                          {{coin.icon}}-->
               <q-expansion-item style="width:550px;">
                 <template v-slot:header style="width:550px;">
 
@@ -144,10 +144,6 @@
         this.$nextTick(function () {
           this.show = true;
         })
-
-
-
-
         setTimeout(this.updateWalletContext,2000)
 
         //TODO why the f do I need this, and watchers not working?
@@ -205,7 +201,7 @@
         //get value
         this.wallets = this.$store.getters['wallets'];
         if(this.wallets.length > 0){
-          let currentWallet = this.wallets.filter(e => e.walletId === this.context)
+          let currentWallet = this.wallets.filter(e => e.context === this.context)
           currentWallet = currentWallet[0]
           console.log("currentWallet: ",currentWallet)
           if(currentWallet && currentWallet.masters){
@@ -224,7 +220,7 @@
             this.coins = coinList
           }else{
             //invalid, force update to a valid wallet
-            this.context = this.wallets[0].walletId
+            this.context = this.wallets[0].context
             this.$q.electron.ipcRenderer.send('updateContext', {
               context:this.context,
               reason:"current context not in wallet array!"

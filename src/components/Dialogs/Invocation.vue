@@ -43,12 +43,12 @@
               >
                 <q-list>
                   <div v-for="(wallet, index) in wallets" :key="index" class="q-mb-sm">
-                    <q-item clickable v-close-popup @click="onItemClick(wallet.walletId)">
+                    <q-item clickable v-close-popup @click="onItemClick(wallet.context)">
                       <q-item-section avatar>
                         <q-avatar icon="account_balance_wallet" color="primary" text-color="white" />
                       </q-item-section>
                       <q-item-section>
-                        <q-item-label>{{wallet.walletId.slice(0, 10)}}</q-item-label>
+                        <q-item-label>{{wallet.context.slice(0, 10)}}</q-item-label>
                         <q-item-label caption></q-item-label>
                       </q-item-section>
                       <q-item-section side>
@@ -289,7 +289,7 @@
         console.log("wallets: ",this.wallets)
         console.log("this.context: ",this.context)
         this.updateContext()
-        let currentWallet = this.wallets.filter(e => e.walletId === this.context)
+        let currentWallet = this.wallets.filter(e => e.context === this.context)
         console.log("currentWallet: ",currentWallet)
         this.walletContext = currentWallet[0]
         if(this.walletContext){
@@ -305,7 +305,7 @@
           this.coins = coinList
         } else if(this.wallets.length > 0){
           //set context to current
-          this.context = this.wallets[0].walletId
+          this.context = this.wallets[0].context
           this.$q.electron.ipcRenderer.send('updateContext', {
             context:this.context,
             reason:"current context not in wallet array!"

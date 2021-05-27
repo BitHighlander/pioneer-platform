@@ -58,7 +58,7 @@
           return {
             url:"https://www.amazon.com/KeepKey-Simple-Cryptocurrency-Hardware-Wallet/dp/B0143M2A5S",
             showSoftwareCreate: featureSoftwareCreate,
-            showKeepkey: featureKeepkey,
+            showKeepkey: true,
           };
         },
         methods: {

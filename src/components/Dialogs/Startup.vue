@@ -115,7 +115,7 @@
         devices:[],
         context:"",
         isReady:false,
-        walletId:"",
+        context:"",
         masterAddressBtc:"",
         masterAddressEth:"",
         totalValueUsd:0,

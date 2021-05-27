@@ -57,6 +57,11 @@ export default store => {
     //if disconect hide icon
 
   })
+  ipcRenderer.on('latencyReport', (event, data) => {
+    console.log('latencyReport event! ')
+    console.log('data: ', data)
+
+  })
   ipcRenderer.on('dashboard', (event, data) => {
     console.log('dashboard event! ')
     console.log('data: ', data)

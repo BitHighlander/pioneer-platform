@@ -86,7 +86,7 @@
             //get value
             this.wallets = this.$store.getters['wallets'];
             if(this.wallets.length > 0){
-              let currentWallet = this.wallets.filter(e => e.walletId === this.context)
+              let currentWallet = this.wallets.filter(e => e.context === this.context)
               currentWallet = currentWallet[0]
               console.log("currentWallet: ",currentWallet)
               if(currentWallet && currentWallet.masters){
@@ -105,7 +105,7 @@
                 this.coins = coinList
               }else{
                 //invalid, force update to a valid wallet
-                this.context = this.wallets[0].walletId
+                this.context = this.wallets[0].context
                 this.$q.electron.ipcRenderer.send('updateContext', {
                   context:this.context,
                   reason:"current context not in wallet array!"

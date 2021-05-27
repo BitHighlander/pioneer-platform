@@ -93,14 +93,14 @@ const mutations = {
     registerWallets(state, wallets) {
       for(let i = 0; i < wallets.length; i++){
         const wallet = wallets[i]
-        if (state.wallets.filter(e => e.walletId === wallet.walletId).length === 0) {
-          state.walletContexts.push(wallet.walletId)
+        if (state.wallets.filter(e => e.context === wallet.context).length === 0) {
+          state.walletContexts.push(wallet.context)
           state.wallets.push(wallet)
         }
       }
     },
     registerWallet(state, wallet) {
-      state.walletContexts.push(wallet.walletId)
+      state.walletContexts.push(wallet.context)
       state.wallets.push(wallet)
     },
     setKeepKeyState(state, stateKeepKey) {

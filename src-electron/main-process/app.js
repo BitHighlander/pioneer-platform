@@ -8,6 +8,8 @@
 
 const TAG = ' | APP | '
 import {checkConfigs, getConfig, innitConfig, updateConfig} from "@pioneer-platform/pioneer-config";
+
+const loadtest = require('loadtest');
 const CryptoJS = require("crypto-js")
 const bip39 = require(`bip39`)
 const App = require("@pioneer-platform/pioneer-app");
@@ -48,17 +50,91 @@ let featureSoftwareCreate = process.env['CREATE_SOFTWARE_FEATURE']
 let featurePasswordless = process.env['PASSWORDLESS_FEATURE']
 let featureInsecurePassword = process.env['INSECURE_PASSWORD']
 let spec = process.env['URL_PIONEER_SPEC']
+spec = spec.replace(/"/g, '')
 let wss = process.env['URL_PIONEER_WS']
-//
+wss = wss.replace(/"/g, '')
+let queryKey
+//blockchains
 let blockchains = ['bitcoin','ethereum','thorchain','bitcoincash','litecoin','binance']
 
-export async function updateServerSelection(event, data) {
-  let tag = TAG + " | updateServerSelection | ";
+
+export async function checkPioneerUrls(event, data) {
+  let tag = TAG + " | checkPioneerUrl | ";
+  try {
+    // log.info(tag,"data: ",data)
+    // log.info(tag,"data: ",data)
+    if(!data.servers) throw Error("102: invalid payload checkPioneerUrls! servers")
+    let servers = data.servers
+
+    let output = []
+
+    for(let server of servers){
+
+      const options = {
+        url: server.spec,
+        maxRequests: 10,
+      };
+
+      // let result = await loadtest.loadTest(options)
+      // console.log(result);
+      // output.push(result)
+
+      loadtest.loadTest(options, function(error, result)
+      {
+        if (error)
+        {
+          return console.error('Got an error: %s', error);
+        }
+        //console.log('Tests run successfully result: ',result);
+        event.sender.send('latencyReport',{ result, server })
+        output.push(result)
+      });
+
+      // let result = await Ping.check(server.spec)
+      // output.push(result)
+
+      // Ping.check(server.spec).then(res => {
+      //   console.log(`status: ${res.status} and time: ${res.time}`);
+      // }, res => {
+      //   console.log(`error msg: ${res.msg}`);
+      // });
+
+      // let res = await ping.promise.probe(server.spec.replace('/spec/swagger.json',''), {
+      //   timeout: 10,
+      //   extra: ['-i', '2'],
+      // });
+      // // console.log(res);
+      // output.push(res)
+    }
+
+    return {
+      success:true,
+      results:output
+    }
+  } catch (e) {
+    console.error(tag, "e: ", e);
+    return {error:e};
+  }
+}
+//startNetwork
+export async function startNetwork(event, data) {
+  let tag = TAG + " | startNetwork | ";
   try {
     log.info(tag,"spec: ",spec)
     log.info(tag,"wss: ",wss)
-    if(data.spec) spec = data.spec
-    if(data.wss) spec = data.wss
+    if(!queryKey) throw Error("QueryKey required for network startup!")
+    NETWORK = new Network(spec,{
+      queryKey
+    })
+    NETWORK = await NETWORK.init()
+
+    //get health
+    let global = await NETWORK.instance.Globals()
+    global = global.data
+    log.info(tag,"global: ",global)
+
+    //
+    event.sender.send('pushPioneerStatus',{ online:true, spec, global})
 
   } catch (e) {
     console.error(tag, "e: ", e);
@@ -66,6 +142,25 @@ export async function updateServerSelection(event, data) {
   }
 }
 
+export async function updateServerSelection(event, data) {
+  let tag = TAG + " | updateServerSelection | ";
+  try {
+    log.info(tag,"spec: ",spec)
+    log.info(tag,"wss: ",wss)
+    if(data.spec) spec = data.spec
+    if(data.wss) wss = data.wss
+    App.updateConfig({spec});
+    App.updateConfig({wss});
+
+
+    if(!queryKey) throw Error("102: Must init config first!")
+    //init network
+    startNetwork(event, data)
+  } catch (e) {
+    console.error(tag, "e: ", e);
+    return {error:e};
+  }
+}
 
 export async function attemptPair(event, data) {
   let tag = TAG + " | attemptPair | ";
@@ -112,8 +207,8 @@ export async function initConfig() {
     log.info(tag,"config: ",config)
     if(config){
       log.info(tag,"config found!: Verify")
-      if(!config.pioneerUrl){
-        App.updateConfig({pioneerUrl});
+      if(!config.spec){
+        App.updateConfig({spec});
       }
       if(!config.queryKey){
         let queryKey = uuidv4()
@@ -125,14 +220,13 @@ export async function initConfig() {
       return true
     } else {
       log.info(tag,"config empty!: init")
-      log.info(tag,"current env!: env:",process.env)
-      log.info(tag,"current env!: env:",process.env['URL_PIONEER_SPEC'])
-      log.info(tag,"current env!: env:",process.env['URL_PIONEER_WS'])
+      log.info(tag,"current env!: spec:",spec)
+      log.info(tag,"current env!: wss:",wss)
+      log.info(tag,"current env!: blockchains:",blockchains)
       //create key/save to config
       await App.initConfig("english");
-      let queryKey = uuidv4()
+      queryKey = uuidv4()
       App.updateConfig({queryKey});
-      App.updateConfig({pioneerUrl});
       App.updateConfig({spec});
       App.updateConfig({wss});
       App.updateConfig({blockchains});
@@ -148,8 +242,11 @@ export async function continueSetup(event, data) {
   let tag = TAG + " | continueSetup | ";
   try {
     let config = await App.getConfig()
+    log.info(tag,"config: ",config)
     if(config){
       log.info(tag,"Checkpoint1 config found!")
+      if(!config.queryKey) throw Error("Invalid config!")
+      queryKey = config.queryKey
       //verify net inited
       if(NETWORK){
         log.info(tag,"Checkpoint2 NETWORK found!")
@@ -160,13 +257,14 @@ export async function continueSetup(event, data) {
 
         //push status
         event.sender.send('pushPioneerStatus',{
-          pioneerUrl:config.pioneerUrl,
+          spec:config.spec,
           online:true,
           globals
         })
 
         //is username set?
         if(config.username){
+          log.info(tag,"username: ",config.username)
           log.info(tag,"Checkpoint4a Username found! SuccessFully Setup Wallet!")
           //start wallet?
           if(!WALLET_INIT){
@@ -183,8 +281,6 @@ export async function continueSetup(event, data) {
               }
             } else {
               log.info(tag,"Checkpoint6b wallet failed to load")
-              //event.sender.send('navigation',{ dialog: 'Setup', action: 'open'})
-              //this doesnt seem to return?
               return {
                 setup:false,
                 success:false,
@@ -205,33 +301,18 @@ export async function continueSetup(event, data) {
         }
       }else{
         log.info(tag,"Checkpoint2b NO NETWORK found!")
-        if(config.pioneerUrl && config.queryKey){
-          if(!config.pioneerUrl) throw Error("102: invalid config! pioneerUrl")
-          if(!config.queryKey) throw Error("103: invalid config! queryKey")
-          log.info(tag,"Checkpoint3a Starting network module!")
-          //init network
-          //get status
-          NETWORK = new Network(config.pioneerUrl,{
-            queryKey:config.queryKey
-          })
-          NETWORK = await NETWORK.init()
-
-          event.sender.send('navigation',{ dialog: 'SetupUsername', action: 'open'})
+        if(config.queryKey){
+          log.info(tag,"Checkpoint3a Starting network select!")
+          event.sender.send('navigation',{ dialog: 'SetupPioneer', action: 'open'})
           return {
             setup:false,
             success:false,
             result:"setup required! network not found!"
           }
-        } else {
-          log.error(tag,"Checkpoint3b invalid config :( trying again")
-          return {
-            setup:false,
-            success:false,
-            result:"setup required! invalid config :("
-          }
         }
       }
     } else {
+      event.sender.send('navigation',{ dialog: 'SetupPioneer', action: 'open'})
       await initConfig()
       return {
         setup:false,
@@ -245,32 +326,32 @@ export async function continueSetup(event, data) {
   }
 }
 
-//checkPioneerUrl
-export async function checkPioneerUrl(event, data) {
-  let tag = TAG + " | checkPioneerUrl | ";
+//checkspec
+export async function checkspec(event, data) {
+  let tag = TAG + " | checkspec | ";
   try {
     console.log(tag,"data: ",data)
     let config = await App.getConfig()
-    let pioneerUrl
-    if(!data.pioneerUrl){
+    let spec
+    if(!data.spec){
       log.info("url NOT passed to check, checking default")
       //is initialized?
       if(config){
-        //use pioneerUrl from config
+        //use spec from config
         log.info(tag,"config: ",config)
-        pioneerUrl = config.pioneerUrl
+        spec = config.spec
       } else {
         await initConfig()
         config = await App.getConfig()
         if(!config) throw Error("Failed to init config!")
-        pioneerUrl = config.pioneerUrl
+        spec = config.spec
       }
     } else {
-      pioneerUrl = data.pioneerUrl
+      spec = data.spec
     }
 
     //get status
-    let networkTest = new Network(pioneerUrl,{
+    let networkTest = new Network(spec,{
       queryKey:config.queryKey
     })
     networkTest = await networkTest.init()
@@ -283,7 +364,7 @@ export async function checkPioneerUrl(event, data) {
     //TODO this assume online! lol fixme when remote
     //push status
     event.sender.send('pushPioneerStatus',{
-      pioneerUrl,
+      spec,
       online:true,
       globals
     })
@@ -299,13 +380,14 @@ export async function getUsbDevices(event, data) {
   try {
     log.info(tag,"Checkpoint 0")
 
-    let allUsbDevices = await Hardware.allDevices()
-    event.sender.send('allUsbDevices',{ allUsbDevices })
-    log.debug(tag,"allUsbDevices: ",allUsbDevices)
+    // let allUsbDevices = await Hardware.allDevices()
+    // log.info(tag,"allUsbDevices: ",allUsbDevices)
+    // event.sender.send('allUsbDevices',{ allUsbDevices })
 
-    let allKeepKeys = await Hardware.listKeepKeys()
-    event.sender.send('allKeepKeys',{ allKeepKeys })
-    log.debug(tag,"allKeepKeys: ",allKeepKeys)
+    // let allKeepKeys = await Hardware.listKeepKeys()
+    // log.info(tag,"allKeepKeys: ",allKeepKeys)
+    // event.sender.send('allKeepKeys',{ allKeepKeys })
+
 
   } catch (e) {
     console.error(tag, "e: ", e);
@@ -332,16 +414,16 @@ export async function startHardware(event, data) {
     log.info(tag,"Checkpoint 1")
     KEEPKEY.events.on('event', async (eventKeepkey) => {
       log.info(tag,"eventKeepkey: ",eventKeepkey)
-      event.sender.send('hardware',{event:eventKeepkey})
+      //event.sender.send('hardware',{event:eventKeepkey})
     });
 
-    let allUsbDevices = await Hardware.allDevices()
-    event.sender.send('allUsbDevices',{ allUsbDevices })
-    log.debug(tag,"allUsbDevices: ",allUsbDevices)
-
-    let allKeepKeys = await Hardware.listKeepKeys()
-    event.sender.send('allKeepKeys',{ allKeepKeys })
-    log.info(tag,"allKeepKeys: ",allKeepKeys)
+    // let allUsbDevices = await Hardware.allDevices()
+    // event.sender.send('allUsbDevices',{ allUsbDevices })
+    // log.debug(tag,"allUsbDevices: ",allUsbDevices)
+    //
+    // let allKeepKeys = await Hardware.listKeepKeys()
+    // event.sender.send('allKeepKeys',{ allKeepKeys })
+    // log.info(tag,"allKeepKeys: ",allKeepKeys)
 
     let info = await Hardware.info()
     event.sender.send('hardwareInfo',{ info })
@@ -483,24 +565,10 @@ export async function onStart(event,data) {
     let walletFiles = await App.getWalletNames()
     log.info("walletFiles: ",walletFiles)
 
-
-    //TODO get local env to work! (adding ""bs from quasar conf
-    if(!config.spec || true){
-      config.spec = "https://pioneers.dev/spec/swagger.json"
-      config.urlSpec = "https://pioneers.dev/spec/swagger.json" // rabble
-      config.wss = "wss://pioneers.dev"
-
-      // config.wss = "ws://127.0.0.1:9001"
-      // config.spec = "http://127.0.0.1:9001/spec/swagger.json"
-      // config.urlSpec = "http://127.0.0.1:9001/spec/swagger.json" // rabble
-      //config.spec = "https://pioneers.dev/spec/swagger.json"
-    }
-
     if(walletFiles.length === 0){
       //Always have atleast 1 wallet!
-      log.info(" No Wallets found! ")
-
-      return true
+      log.error(" No Wallets found! ")
+      throw Error("Can not start until wallet created!")
     }
 
     //TODO blockchains configurable?
@@ -595,19 +663,6 @@ export async function onStart(event,data) {
       log.info(tag,"resultUpdateConextRemote: ",resultUpdateConextRemote)
     }
 
-
-    //TODO is context pref in config?
-    //redundant to above?
-    // let contextName = await App.context()
-    // console.log("contextName: ",contextName)
-    // if(contextName && contextName !== WALLET_CONTEXT){
-    //   log.info(tag,"Local context not matching remote! setting to local")
-    //   WALLET_CONTEXT = userInfo.context
-    //   event.sender.send('setContext',{context:userInfo.context})
-    //   let resultUpdateConextRemote = await App.setContext(contextName)
-    //   log.info(tag,"resultUpdateConextRemote: ",resultUpdateConextRemote)
-    // }
-
     //get invocations
     let invocationsRemote = await App.getInvocations()
     log.info(tag,"invocationsRemote: ",invocationsRemote)
@@ -620,6 +675,7 @@ export async function onStart(event,data) {
 
     //Start wallet interface
     log.info(tag,"CHECKPOINT **** return start")
+    refreshPioneer(event, data)
     return resultInit
   } catch (e) {
     console.error(tag, "e: ", e);
@@ -748,7 +804,7 @@ export async function buildTransaction(event, data) {
       throw Error("103: could not find context!")
     }
     let walletContext = WALLETS_LOADED[context]
-    log.info(tag,"walletContext: ",walletContext.walletId)
+    log.info(tag,"walletContext: ",walletContext.context)
 
     switch(invocation.type) {
       case 'transfer':
@@ -825,7 +881,7 @@ export async function approveTransaction(event, data) {
       throw Error("103: could not find context!")
     }
     let walletContext = WALLETS_LOADED[context]
-    log.info(tag,"walletContext: ",walletContext.walletId)
+    log.info(tag,"walletContext: ",walletContext.context)
 
     //get
     //if(invocation.unsignedTx.HDwalletPayload.coin === 'BitcoinCash') invocation.unsignedTx.HDwalletPayload.coin = 'BCH'
@@ -875,7 +931,7 @@ export async function broadcastTransaction(event, data) {
       throw Error("103: could not find context!")
     }
     let walletContext = WALLETS_LOADED[context]
-    log.info(tag,"walletContext: ",walletContext.walletId)
+    log.info(tag,"walletContext: ",walletContext.context)
 
     //normalize
     if(!invocation.invocation.invocationId) invocation.invocation.invocationId = invocation.invocationId
@@ -938,8 +994,8 @@ export async function onAttemptCreateUsername(event, data) {
     let config = await App.getConfig()
     if(!data.username) throw Error("102: Must give username for creating username!")
     if(!config) throw Error("103: Must init config before creating username!")
-    let urlSpec = config.pioneerUrl
-    if(!urlSpec) throw Error("104: pioneerUrl NOT set before onAttemptCreateUsername!")
+    let urlSpec = config.spec
+    if(!urlSpec) throw Error("104: spec NOT set before onAttemptCreateUsername!")
     if(!NETWORK) throw Error("105: Network not initialized! before onAttemptCreateUsername")
 
     let userInfoPublic = await NETWORK.instance.Username(data.username)
@@ -947,9 +1003,10 @@ export async function onAttemptCreateUsername(event, data) {
     console.log("userInfoPublic: ",userInfoPublic)
 
     if(userInfoPublic.available){
-      await innitConfig("english");
       log.info("username available!: ")
       updateConfig({username: data.username});
+
+      //note: App will register on startup*
 
       //close window
       event.sender.send('navigation', {dialog: 'Username', action: 'close'})
