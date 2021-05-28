@@ -151,7 +151,6 @@
           console.log("Refresh Pioneer! **** pioneer.vue")
           //
           this.updateWalletContext()
-          this.updateContext()
         })
 
         ipcRenderer.on('setContext', (event, data) => {
@@ -181,7 +180,6 @@
           console.log("value: ",value)
           //get value
           this.updateWalletContext()
-          // this.updateContext()
         },
         immediate: true
       }
@@ -227,8 +225,6 @@
             });
           }
         }
-      },
-      updateContext() {
       },
       openPair(item) {
         console.log("item Click: ",item)

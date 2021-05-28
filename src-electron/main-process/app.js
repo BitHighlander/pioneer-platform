@@ -627,33 +627,19 @@ export async function onStart(event,data) {
 
 
     //wallet events
-    resultInit.events.on('message', async (request) => {
-      console.log(tag,"*** message: ", request)
-      switch(request.type) {
-        case 'context':
-          console.log(" **** PROCESS EVENT ****  request: ",request)
-          event.sender.send('setContext',{ context: request.context })
-          break
-        case 'transfer':
-          console.log(" **** PROCESS EVENT ****  request: ",request)
-          event.sender.send('navigation',{ dialog: 'Invocation', action: 'open'})
-          event.sender.send('setContextInvoke',{ context: request.context })
-          break
-        case 'swap':
-          console.log(" **** PROCESS EVENT ****  request: ",request)
-          event.sender.send('setContext',{ context: request.context })
-          break
-        case 'approve':
-          console.log(" **** PROCESS EVENT ****  request: ",request)
-          event.sender.send('setContext',{ context: request.context })
-          break
-        default:
-          console.log("Unhandled type: ",request.type)
+    resultInit.events.on('unsignedTx', async (transaction) => {
+      log.info(tag,"*** unsignedTx: ", transaction)
+      if(!transaction.invocationId){
+        if(transaction.swap && transaction.swap.invocationId) transaction.invocationId = transaction.swap.invocationId
+        if(transaction.transaction && transaction.transaction.invocationId) transaction.invocationId = transaction.transaction.invocationId
       }
-      //if context
+      if(!transaction.invocationId) throw Error("failed to find transaction.invocationId")
 
-      //TODO messages
-      //event.sender.send('navigation',{ dialog: 'Connect', action: 'close'})
+      event.sender.send('setInvocationContext',{invocationId:transaction.invocationId})
+      let invocation = await App.getInvocation(transaction.invocationId)
+      log.info(tag,"*** invocation: ", invocation)
+      //open invocation dialog
+      event.sender.send('addInvocation',invocation)
     })
 
     //TODO block events per blockchain activated

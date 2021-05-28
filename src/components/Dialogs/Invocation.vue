@@ -251,7 +251,7 @@
           console.log("value: ",value)
           //get value
           this.updateWalletContext()
-          this.updateContext()
+          // this.updateContext()
         },
         immediate: true
       },
@@ -288,7 +288,7 @@
         this.wallets = this.$store.getters['wallets'];
         console.log("wallets: ",this.wallets)
         console.log("this.context: ",this.context)
-        this.updateContext()
+        // this.updateContext()
         let currentWallet = this.wallets.filter(e => e.context === this.context)
         console.log("currentWallet: ",currentWallet)
         this.walletContext = currentWallet[0]
@@ -306,10 +306,10 @@
         } else if(this.wallets.length > 0){
           //set context to current
           this.context = this.wallets[0].context
-          this.$q.electron.ipcRenderer.send('updateContext', {
-            context:this.context,
-            reason:"current context not in wallet array!"
-          });
+          // this.$q.electron.ipcRenderer.send('updateContext', {
+          //   context:this.context,
+          //   reason:"current context not in wallet array!"
+          // });
         }
       },
       onItemClick(context) {

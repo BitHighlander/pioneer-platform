@@ -170,7 +170,6 @@ export default store => {
   })
   ipcRenderer.on('transactionBuilt', (event, data) => {
     console.log('transactionBuilt event! ')
-    console.log('transactionBuilt event! ')
     //invocation context state to sign
     store.commit('setInvocationContextState','built')
   })
@@ -186,6 +185,13 @@ export default store => {
     for(let i = 0; i < data.length; i++){
       const invocation = data[i]
       store.commit('addInvocation',invocation)
+    }
+  })
+  ipcRenderer.on('addInvocation', (event, data) => {
+    console.log('invocations event! ')
+    console.log('data: ', data)
+    if(data.invocationId){
+      store.commit('addInvocation',data)
     }
   })
   ipcRenderer.on('loadApps', (event, data) => {
