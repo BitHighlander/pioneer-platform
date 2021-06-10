@@ -15,7 +15,6 @@
         <AppSwitcher />
       </div>
 
-
       <div v-if="keepkeyConnected && featureKeepkey">
         <q-item clickable to="/keepkey" class="justify-center user-header" style="padding-top: 30px">
           <q-img src="~assets/box-logo.png"></q-img>
@@ -31,7 +30,6 @@
           <q-icon size=md name="admin_panel_settings"></q-icon>
         </q-item>
       </div>
-
 
       <q-item clickable class="user-header">
         <q-item-section avatar side>
@@ -188,6 +186,7 @@ export default {
 
       //support partial setup exit
       this.$q.electron.ipcRenderer.send('continueSetup', {})
+
 
     } catch (e) {
       console.error(e);

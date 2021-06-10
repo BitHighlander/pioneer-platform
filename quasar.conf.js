@@ -296,6 +296,12 @@ module.exports = function (ctx) {
           "entitlements": "build/entitlements.mac.plist",
           "entitlementsInherit": "build/entitlements.mac.plist"
         },
+        protocols: {
+          "name": "pioneer-protocol",
+          "schemes": [
+            "invocation"
+          ]
+        }
       },
 
       // More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration

@@ -188,6 +188,18 @@ function createWindow () {
 
 }
 
+// This will catch clicks on links such as <a href="foobar://abc=1">open in foobar</a>
+app.on('open-url', function (event, data) {
+  event.preventDefault();
+  //TODO if invocation then open invocation page and set context
+  log.info("Got data: ",data)
+  createWindow()
+});
+
+app.setAsDefaultProtocolClient('invocation');
+// Export so you can access it from the renderer thread
+
+
 app.on('ready', createWindow)
 
 
