@@ -1,6 +1,6 @@
-# pioneer-platform (platform)
+# Keepkey Client (v2)
 
-Pioneer Platform SDK
+A support Application for the keepkey wallet
 
 ## Install the dependencies
 ```bash
