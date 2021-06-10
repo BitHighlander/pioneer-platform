@@ -146,9 +146,9 @@ module.exports = function (ctx) {
       workboxPluginMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       workboxOptions: {}, // only for GenerateSW
       manifest: {
-        name: `pioneer-platform`,
-        short_name: `pioneer-platform`,
-        description: `Pioneer Platform SDK`,
+        name: `keepkey-client`,
+        short_name: `keepkey-client`,
+        description: `A support application for the KeepKey Hardware Wallet`,
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#ffffff',
@@ -287,7 +287,7 @@ module.exports = function (ctx) {
       // https://www.electron.build/configuration/configuration
       // https://discuss.circleci.com/t/mac-os-app-signing-without-fastlane/27292/8
       builder: {
-        appId: 'dev.pioneer.platform',
+        appId: 'dev.keepkey.client',
         afterSign:"scripts/afterSignHook.js",
         "mac": {
           "icon": "build/icon.png",
@@ -297,7 +297,7 @@ module.exports = function (ctx) {
           "entitlementsInherit": "build/entitlements.mac.plist"
         },
         protocols: {
-          "name": "pioneer-protocol",
+          "name": "keepkey-client",
           "schemes": [
             "invocation"
           ]

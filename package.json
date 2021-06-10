@@ -1,12 +1,12 @@
 {
-  "name": "platform",
+  "name": "keepkey-client",
   "version": "8.1.3",
   "private": true,
-  "description": "Pioneer Platform SDK",
-  "productName": "pioneer-platform",
+  "description": "A support application for the KeepKey Hardware Wallet",
+  "productName": "keepkey-client",
   "author": "highlander <bithighlander@gmail.com>",
   "repository": {
-    "url": "https://github.com/bithighlander/pioneer"
+    "url": "https://github.com/bithighlander/keepkey-client"
   },
   "scripts": {
     "npm": "npm i",

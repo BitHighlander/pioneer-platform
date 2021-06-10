@@ -1,6 +1,6 @@
 # Keepkey Client (v2)
 
-A support Application for the keepkey wallet
+A support application for the KeepKey Hardware Wallet
 
 ## Install the dependencies
 ```bash
