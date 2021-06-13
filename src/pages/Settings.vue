@@ -1,76 +1,92 @@
 <template>
   <q-page padding>
     <!-- content -->
-    <q-card inline>
-      <q-card-section>
-        Settings
-        <div class="text-h6">PioneerUrl: {{pioneerUrl}}</div>
-        <div class="text-h6">username: {{username}}</div>
-        <div class="text-subtitle2">queryKey: {{queryKey}}</div>
-      </q-card-section>
 
-      <q-card-actions align="right">
-<!--        <q-btn @click="openEditConfig">edit config <q-icon name="settings"></q-icon></q-btn>-->
-        <q-btn @click="deleteConfig" color="red">delete config <q-icon name="warning"></q-icon></q-btn>
-      </q-card-actions>
-    </q-card>
-    <div id="wallets">
-      <div v-for="wallet in wallets" :key="wallet.type">
-        <q-card>
-          <q-card-title>
-            <div v-if="wallet.type === 'keepkey'">
-              <q-img src="~assets/box-logo.png"
-                     spinner-color="red"
-                     :ratio="1/1"
-                     style="height: 30px; max-width: 70px">
-              </q-img>
-            </div>
-            <div v-if="wallet.type === 'software'">
-              <q-icon size=xl name="account_balance_wallet" />
-            </div>
-            <br/>
-            type: {{ wallet.type }}
-            <br/>
-            name: {{ wallet.name }}
-            <br/>
-            value: {{ formatToPriceUSD(wallet.totalValueUsd) }}
-            <br/>
-            Master ETH: {{ wallet.public.ETH.master }}
-<!--            assets: {{ wallet.assets }}-->
-<!--            assets: {{ wallet.features.deviceId }}-->
-<!--            id: {{ wallet.features.id }}-->
-<!--            <q-rating slot="subtitle" v-model="stars" :max="5" />-->
-            <div slot="right" class="row items-center">
-<!--              <q-icon name="place" /> 250 ft-->
-            </div>
-          </q-card-title>
-          <q-card-main>
-<!--            label: {{ wallet.features }}-->
-<!--            majorVersion: {{ wallet.features.majorVersion }}-->
-<!--            label: {{ wallet.features.majorVersion }}-->
-          </q-card-main>
-          <q-card-separator />
-          <q-card-actions>
-            <q-btn flat round small><q-icon name="settings" /></q-btn>
-            <q-menu fit :offset="[-16, -3]">
-              <q-list style="min-width: 100px">
-                <q-list>
-                  <q-item-label header>Wallet Options</q-item-label>
-                  <q-item @click="openViewSeed(wallet.name)" tag="label" v-ripple>
-                    View Seed
-                  </q-item>
-                  <q-item tag="label" v-ripple>
-                  </q-item>
+    <div>
+      <h6>Open Dialog</h6>
+    </div>
+    <div>
+      <h6>Settings</h6>
+      <q-card inline>
+        <q-card-section>
+          <div class="text-h6">PioneerUrl: {{pioneerUrl}}</div>
+          <div class="text-h6">username: {{username}}</div>
+          <div class="text-subtitle2">queryKey: {{queryKey}}</div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn @click="openEditConfig">edit config <q-icon name="settings"></q-icon></q-btn>
+          <q-btn @click="deleteConfig" color="red">delete config <q-icon name="warning"></q-icon></q-btn>
+        </q-card-actions>
+      </q-card>
+    </div>
+    <div>
+      <h6>Wallets</h6>
+      <div id="wallets">
+        <div v-for="wallet in wallets" :key="wallet.type">
+          <q-card>
+            <q-card-title>
+              <div v-if="wallet.type === 'keepkey'">
+                <q-img src="~assets/box-logo.png"
+                       spinner-color="red"
+                       :ratio="1/1"
+                       style="height: 30px; max-width: 70px">
+                </q-img>
+              </div>
+              <div v-if="wallet.type === 'software'">
+                <q-icon size=xl name="account_balance_wallet" />
+              </div>
+              <br/>
+              type: {{ wallet.type }}
+              <br/>
+              name: {{ wallet.name }}
+              <br/>
+              value: {{ formatToPriceUSD(wallet.totalValueUsd) }}
+              <br/>
+              <!--            Master ETH: {{ wallet.public.ETH.master }}-->
+              <!--            assets: {{ wallet.assets }}-->
+              <!--            assets: {{ wallet.features.deviceId }}-->
+              <!--            id: {{ wallet.features.id }}-->
+              <!--            <q-rating slot="subtitle" v-model="stars" :max="5" />-->
+              <div slot="right" class="row items-center">
+                <!--              <q-icon name="place" /> 250 ft-->
+              </div>
+            </q-card-title>
+            <q-card-main>
+              <!--            label: {{ wallet.features }}-->
+              <!--            majorVersion: {{ wallet.features.majorVersion }}-->
+              <!--            label: {{ wallet.features.majorVersion }}-->
+            </q-card-main>
+            <q-card-separator />
+            <q-card-actions>
+              <q-btn flat round small><q-icon name="settings" /></q-btn>
+              <q-menu fit :offset="[-16, -3]">
+                <q-list style="min-width: 100px">
+                  <q-list>
+                    <q-item-label header>Wallet Options</q-item-label>
+                    <q-item @click="updateFirmware(wallet.name)" tag="label" v-ripple>
+                      update firmware
+                    </q-item>
+                    <q-item @click="wipeDevice(wallet.name)" tag="label" v-ripple>
+                      Wipe
+                    </q-item>
+                    <!--                  <q-item @click="openViewSeed(wallet.name)" tag="label" v-ripple>-->
+                    <!--                    View Seed-->
+                    <!--                  </q-item>-->
+                    <q-item tag="label" v-ripple>
+                    </q-item>
+                  </q-list>
+                  <q-separator />
                 </q-list>
-                <q-separator />
-              </q-list>
-            </q-menu>
-          </q-card-actions>
-        </q-card>
+              </q-menu>
+            </q-card-actions>
+          </q-card>
 
 
+        </div>
       </div>
     </div>
+
 
 
     <q-card class="my-card">
@@ -203,6 +219,14 @@
     openViewSeed(wallet){
       //open view seed
       this.$q.electron.ipcRenderer.send('viewSeed', {wallet});
+    },
+    updateFirmware(wallet){
+      //open view seed
+      this.showModal('UpdateFirmware')
+    },
+    wipeDevice(wallet){
+      //open view seed
+      this.showModal('Wipe')
     },
     deleteConfig(){
       deleteConfig()

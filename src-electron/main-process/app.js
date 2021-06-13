@@ -138,16 +138,25 @@ export async function startNetwork(event, data) {
       event.sender.send('pushPioneerStatus',{ online:true, spec, global})
       if(username){
         //open startup
-        event.sender.send('navigation',{ dialog: 'Startup', action: 'open'})
       } else {
-        //open username
-        event.sender.send('navigation',{ dialog: 'SetupUsername', action: 'open'})
+        await createUsername(event, data)
       }
+      event.sender.send('navigation',{ dialog: 'Setup', action: 'open'})
     }
 
+    return true
+  } catch (e) {
+    console.error(tag, "e: ", e);
+    return {error:e};
+  }
+}
 
-
-
+export async function createUsername(event, data) {
+  let tag = TAG + " | createUsername | ";
+  try {
+    username = "user:"+uuidv4()
+    App.updateConfig({username});
+    //write to config
   } catch (e) {
     console.error(tag, "e: ", e);
     return {error:e};
@@ -304,25 +313,26 @@ export async function continueSetup(event, data) {
             log.info(tag,"Checkpoint5b Wallet already started! will not re-attempt")
           }
         } else {
-          log.info(tag,"Checkpoint4b Username NOT found! Need user input")
-          //Create username
-          event.sender.send('navigation',{ dialog: 'SetupUsername', action: 'open'})
-          return {
-            success:false,
-            result:'prompting user to create username!'
-          }
+          await createUsername(event, data)
+          continueSetup(event, data)
         }
       }else{
-        log.info(tag,"Checkpoint2b NO NETWORK found!")
-        if(config.queryKey){
-          log.info(tag,"Checkpoint3a Starting network select!")
-          event.sender.send('navigation',{ dialog: 'SetupPioneer', action: 'open'})
-          return {
-            setup:false,
-            success:false,
-            result:"setup required! network not found!"
+        if(config.spec && config.wss){
+          await startNetwork(event, data)
+          continueSetup(event, data)
+        }else{
+          log.info(tag,"Checkpoint2b NO NETWORK found!")
+          if(config.queryKey){
+            log.info(tag,"Checkpoint3a Starting network select!")
+            event.sender.send('navigation',{ dialog: 'SetupPioneer', action: 'open'})
+            return {
+              setup:false,
+              success:false,
+              result:"setup required! network not found!"
+            }
           }
         }
+
       }
     } else {
       event.sender.send('navigation',{ dialog: 'SetupPioneer', action: 'open'})

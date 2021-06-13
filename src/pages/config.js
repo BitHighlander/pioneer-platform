@@ -16,7 +16,6 @@ const mkdirp = require('mkdirp')
 //   .replace(/(\s+)/g, '\\$1')
 
 export const rootDir = require('app-root-dir').get()
-
 export const moneroNode = 'http://node.moneroworld.com:18089'
 export const cosmosNode = ''
 export const infuraNode = ''

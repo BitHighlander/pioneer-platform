@@ -5,20 +5,14 @@
       class="homerow dark-panel has-border has-border-right menu text-center column no-wrap justify-between q-electron-drag"
     >
       <q-item clickable to="/pioneer" class="justify-center user-header" style="padding-top: 30px">
-        <q-avatar @click="refreshPioneer" color="primary">
-          <q-img src="~assets/GreenCompas.jpeg"></q-img>
+        <q-avatar @click="refreshPioneer">
+          <q-img src="~assets/box-logo.png"></q-img>
         </q-avatar>
       </q-item>
       <small><animated-number :value="totalValueUsd" :formatValue="formatToPriceUSD" :duration="duration"/></small>
 
       <div v-if="featureApps || true">
         <AppSwitcher />
-      </div>
-
-      <div v-if="keepkeyConnected && featureKeepkey">
-        <q-item clickable to="/keepkey" class="justify-center user-header" style="padding-top: 30px">
-          <q-img src="~assets/box-logo.png"></q-img>
-        </q-item>
       </div>
 
       <q-item clickable to="/invocations" class="justify-center user-header" style="">
@@ -50,7 +44,7 @@
             <q-list>
               <q-item tag="label" v-ripple>
                 <q-item-section>
-                  <q-item-label @click="openPin">Open Pin Winodw <q-icon name="add"></q-icon> </q-item-label>
+                  <q-item-label @click="openPin">Open Pin Window <q-icon name="add"></q-icon> </q-item-label>
                 </q-item-section>
               </q-item>
               <q-item v-if="featureAddWallet" tag="label" v-ripple>
