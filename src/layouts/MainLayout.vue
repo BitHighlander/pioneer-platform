@@ -25,74 +25,13 @@
         </q-item>
       </div>
 
-      <q-item clickable class="user-header">
-        <q-item-section avatar side>
-          <q-avatar v-if="isLoggedIn" color="primary">M</q-avatar>
-          <q-avatar v-else color="primary">
-            <q-icon name="settings" />
+      <div>
+        <q-item clickable to="/settings">
+          <q-avatar class="justify-center user-header" color="primary" style="">
+            <q-icon size=md name="settings"></q-icon>
           </q-avatar>
-        </q-item-section>
-        <div v-if="featureFio">
-          <q-item-section>
-            <q-item-label v-if="getUsername" :lines="1">{{
-              getUsername
-              }}</q-item-label>
-          </q-item-section>
-        </div>
-        <q-menu fit :offset="[-16, -3]">
-          <q-list style="min-width: 100px">
-            <q-list>
-              <q-item tag="label" v-ripple>
-                <q-item-section>
-                  <q-item-label @click="openPin">Open Pin Window <q-icon name="add"></q-icon> </q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item v-if="featureAddWallet" tag="label" v-ripple>
-                <q-item-section>
-                  <q-item-label @click="onAddWallet">Add Wallet <q-icon name="add"></q-icon> </q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item v-if="featureUiLightMode" tag="label" v-ripple>
-                <q-item-section>
-                  <q-item-label>Dark Mode</q-item-label>
-                </q-item-section>
-                <q-item-section avatar>
-                  <q-toggle color="blue" v-model="darkMode" val="battery" />
-                </q-item-section>
-              </q-item>
-              <q-item v-if="featureUiTheme" tag="label" v-ripple>
-                <q-item-section>Theme</q-item-section>
-                <q-item-section side>
-                  <q-icon name="keyboard_arrow_right" />
-                </q-item-section>
-                <q-menu anchor="top right" self="top left">
-                  <q-list>
-                    <q-item>
-                      <q-option-group
-                        v-model="theme"
-                        :options="themes" />
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </q-item>
-            </q-list>
-            <q-separator />
-            <q-item clickable to="/settings">
-              <q-item-section>Settings</q-item-section>
-            </q-item>
-            <q-item
-              clickable
-              @click="showModal('Pair')"
-              class="column justify-center align-center"
-            >
-              <q-item-section>
-                Pair <q-icon name="connect" />
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-menu>
-      </q-item>
-
+        </q-item>
+      </div>
     </div>
 
     <q-page-container>
@@ -163,7 +102,6 @@ export default {
   computed: {
     ...mapGetters([
       'getUsername',
-      // 'isTestnet',
       'getTotal',
       'wallets',
       'devices',
@@ -207,7 +145,6 @@ export default {
       this.$q.electron.ipcRenderer.send('refreshPioneer', {});
 
       //get all the things
-      // let testnet = await this.$store.getters['isTestnet']
       let context = await this.$store.getters['getContext']
       let username = await this.$store.getters['getUsername']
       let total = await this.$store.getters['getTotal']

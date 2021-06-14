@@ -1,10 +1,6 @@
 <template>
   <q-page padding>
     <!-- content -->
-
-    <div>
-      <h6>Open Dialog</h6>
-    </div>
     <div>
       <h6>Settings</h6>
       <q-card inline>
@@ -87,45 +83,15 @@
       </div>
     </div>
 
+    <div>
+      <h6>Open Dialog</h6>
+      <q-card inline>
+        <q-btn @click="openDialog('Pair')">Pair</q-btn>
+        <q-btn @click="openDialog('Pin')">Pin</q-btn>
+        <q-btn @click="openDialog('Setup')">Setup</q-btn>
+      </q-card>
 
-
-    <q-card class="my-card">
-
-<!--      Wallets connected: {{wallets}}-->
-
-    </q-card>
-
-    <div class="row">
-      <div class="col">
-        <q-card class="my-card">
-
-
-<!--          <q-btn @click="viewSeed">-->
-<!--            {{ $t("msg.view_seed") }}-->
-<!--          </q-btn>-->
-
-        </q-card>
-      </div>
-
-      <!--      <div class="col">-->
-
-<!--      </div>-->
-<!--      <div class="col">1</div>-->
-<!--      <div class="col">1</div>-->
-      <!--
-         we have 3 children, so equivalent
-         to above would be to use `col-4`
-         on each of the children
-      -->
     </div>
-
-<!--    <div class="row">-->
-<!--      <div class="col-3">1</div>-->
-<!--      <div class="col-6">2</div>-->
-<!--      <div class="col-3">1</div>-->
-<!--    </div>-->
-
-    <!--  openViewSeed -->
 
   </q-page>
 </template>
@@ -223,6 +189,10 @@
     updateFirmware(wallet){
       //open view seed
       this.showModal('UpdateFirmware')
+    },
+    openDialog(dialog){
+      //open view seed
+      this.showModal(dialog)
     },
     wipeDevice(wallet){
       //open view seed

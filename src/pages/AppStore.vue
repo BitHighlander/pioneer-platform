@@ -36,6 +36,7 @@
 
 <script>
   import { mapMutations, mapGetters } from 'vuex'
+  const { shell } = require('electron')
 
   // class Post {
   //   constructor(title, link, author, img) {
@@ -46,10 +47,26 @@
   //   }
   // }
 
+  let shapeshiftExplorer = {
+    name:"ShapeShift.com",
+    description:"get started with top cryptocurrencies. Buy, trade, track, receive, share, and even win! ",
+    launch:"https://beta.shapeshift.com/",
+    logoUrl:"https://cdn.builtincolorado.com/cdn-cgi/image/fit=scale-down,sharpen=0.3,f=auto,q=100,w=170,h=170/sites/www.builtincolorado.com/files/2019-07/FOX_Icon.png",
+    key:1,
+  }
+
   let swapsPro = {
     name:"swaps.pro",
     description:"Decentralized multi-chain swaps!",
     launch:"https://swaps.pro",
+    logoUrl:"https://avatars.githubusercontent.com/u/40639099?s=280&v=4",
+    key:1,
+  }
+
+  let pioneerExplorer = {
+    name:"pioneers.dev",
+    description:"Blockchain Development tools",
+    launch:"https://pioneers.dev",
     logoUrl:"https://avatars.githubusercontent.com/u/40639099?s=280&v=4",
     key:1,
   }
@@ -59,7 +76,7 @@
     data () {
       return {
         queryKey:"",
-        apps:[swapsPro],
+        apps:[shapeshiftExplorer,swapsPro,pioneerExplorer],
         installing: [],
         search: "",
       }
@@ -89,7 +106,8 @@
       ...mapMutations(['addApp', 'removeApp']),
       openApp (app) {
         console.log("opening app: ",app)
-        window.open(app, '_blank', 'nodeIntegration=no')
+        //window.open(app, '_blank', 'nodeIntegration=no')
+
       },
       loadApps () {
         // const apps = this.$store.getters['getApps'];
